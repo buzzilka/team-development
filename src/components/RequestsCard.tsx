@@ -1,9 +1,4 @@
-import {
-  Stack, 
-  Typography, 
-  Card, 
-  Button 
-} from "@mui/material";
+import { Stack, Typography, Card, Button } from "@mui/material";
 import Request from "./Request";
 import { useState } from "react";
 import CreateRequest from "./CreateRequest";
@@ -18,7 +13,7 @@ const RequestsCard = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <Card sx={{ maxWidth: 800, mx: "auto", p: 3, boxShadow: 3 , mt: 1}}>
+    <Card elevation={0} sx={{ maxWidth: 800, mx: "auto", p: 3, mt: 1 }}>
       <Typography variant="h5" fontWeight="bold" mb={2}>
         Мои заявки
       </Typography>
@@ -30,10 +25,20 @@ const RequestsCard = () => {
       </Stack>
 
       <Button
-        variant="contained"
+        disableRipple
+        variant="outlined"
         color="primary"
         fullWidth
-        sx={{ mt: 3 }}
+        sx={{
+          mt: 3,
+          border: "none",
+          fontWeight: "bold",
+          color: "#0060e6",
+          bgcolor: "#e8f2fc",
+          "&:hover": {
+            bgcolor: " #bad9f7",
+          },
+        }}
         onClick={() => setOpen(true)}
       >
         Создать заявку

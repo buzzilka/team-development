@@ -1,9 +1,4 @@
-import {
-  Card, 
-  Typography, 
-  Box, 
-  Dialog 
-} from "@mui/material";
+import { Card, Typography, Box, Dialog } from "@mui/material";
 import { useState } from "react";
 
 type Status = "Одобрено" | "На обработке" | "Отклонена";
@@ -15,9 +10,21 @@ interface RequestProps {
 }
 
 const statusColors: Record<Status, string> = {
-  "Одобрено": "green",
-  "На обработке": "orange",
-  "Отклонена": "red",
+  "Одобрено": "#e8fcf4",
+  "На обработке": "#fff7db",
+  "Отклонена": "#fce8e8",
+};
+
+const statusColorsHover: Record<Status, string> = {
+  "Одобрено": "#c5fce6",
+  "На обработке": "#f7ecba",
+  "Отклонена": "#f7baba",
+};
+
+const textStatusColors: Record<Status, string> = {
+  "Одобрено": "#0a7649",
+  "На обработке": "#c8a122",
+  "Отклонена": "#c82d22",
 };
 
 const Request: React.FC<RequestProps> = ({ startDate, endDate, status }) => {
@@ -26,19 +33,23 @@ const Request: React.FC<RequestProps> = ({ startDate, endDate, status }) => {
   return (
     <>
       <Card
+        elevation={0}
         onClick={() => setOpen(true)}
         sx={{
-          border: `2px solid ${statusColors[status]}`,
+          bgcolor: `${statusColors[status]}`,
           p: 2,
           cursor: "pointer",
           transition: "0.3s",
-          "&:hover": { boxShadow: 3 },
+          "&:hover": { bgcolor: `${statusColorsHover[status]}` },
         }}
       >
         <Typography variant="h6">
           {startDate} - {endDate}
         </Typography>
-        <Typography variant="body2" sx={{ color: statusColors[status] }}>
+        <Typography
+          variant="body2"
+          sx={{ color: textStatusColors[status], fontWeight: "bold" }}
+        >
           {status}
         </Typography>
       </Card>
