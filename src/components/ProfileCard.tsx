@@ -25,6 +25,20 @@ function ProfileCard() {
           >
             Студент
           </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              ml: 1,
+              bgcolor: "grey.200",
+              display: "inline-block",
+              px: 2,
+              py: 0.5,
+              borderRadius: 1,
+              mt: 0.5,
+            }}
+          >
+            972302
+          </Typography>
         </Grid>
       </Grid>
 

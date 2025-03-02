@@ -1,15 +1,11 @@
-import './App.css'
-import ProfileCard from './components/ProfileCard'
-import RequestsCard from './components/RequestsCard'
+import AppRouter from "./routes/AppRouter";
 
 function App() {
-
   return (
     <>
-      <ProfileCard/>
-      <RequestsCard/>
+      <AppRouter />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
