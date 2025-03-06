@@ -5,7 +5,7 @@ import { TextField, Button, Box, Typography } from "@mui/material";
 import { loginUser } from "../api/auth";
 
 const schema = yup.object({
-  email: yup.string().required("Введите email"),
+  login: yup.string().min(6, "Минимум 6 символов").required("Введите логин"),
   password: yup
     .string()
     .min(6, "Минимум 6 символов")
@@ -21,9 +21,9 @@ const LoginForm = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: { email: string; password: string }) => {
+  const onSubmit = async (data: { login: string; password: string }) => {
     try {
-      const response = await loginUser(data.email, data.password);
+      const response = await loginUser(data.login, data.password);
       localStorage.setItem("token", response.token);
       window.location.href = "/profile";
     } catch (error) {
@@ -39,12 +39,12 @@ const LoginForm = () => {
       </Typography>
 
       <TextField
-        label="Email"
+        label="Логин"
         fullWidth
         margin="normal"
-        {...register("email")}
-        error={!!errors.email}
-        helperText={errors.email?.message}
+        {...register("login")}
+        error={!!errors.login}
+        helperText={errors.login?.message}
       />
 
       <TextField
