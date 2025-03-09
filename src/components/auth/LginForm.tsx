@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { TextField, Button, Box, Typography } from "@mui/material";
-import { loginUser } from "../api/auth";
+import { loginUser } from "../../api/authEndpoints";
 
 const schema = yup.object({
   login: yup.string().min(6, "Минимум 6 символов").required("Введите логин"),

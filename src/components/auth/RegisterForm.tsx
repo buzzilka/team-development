@@ -12,7 +12,7 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
-import { registerUser } from "../api/auth";
+import { registerUser } from "../../api/authEndpoints";
 import axios from "axios";
 
 const schema = yup.object({
@@ -64,17 +64,18 @@ const RegisterForm = () => {
   }) => {
     console.log("Данные формы:", data);
     try {
-      await registerUser(
+      const response = await registerUser(
         data.name,
         data.login,
         data.password,
         data.role,
-        data.group || "-"
+        data.group || ""
       );
+      localStorage.setItem("token", response.token);
       window.location.href = "/profile";
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error.response?.data);
+        console.log(error);
       } else {
         console.log("Не ошибка сервера");
       }

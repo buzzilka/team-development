@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Container, Tab, Tabs, Box } from "@mui/material";
-import LoginForm from "../components/LginForm";
-import RegisterForm from "../components/RegisterForm";
+import LoginForm from "../components/auth/LginForm";
+import RegisterForm from "../components/auth/RegisterForm";
 
 const AuthPage = () => {
   const [tab, setTab] = useState(0);

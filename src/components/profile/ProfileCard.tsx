@@ -1,6 +1,29 @@
 import { Card, Typography, Avatar, Button, Grid } from "@mui/material";
+import { logout } from "../../api/profileEndpoints";
 
-function ProfileCard() {
+interface ProfileCardProps {
+  name: string;
+  role: string[];
+  isConfirmed: boolean;
+  group?: string;
+}
+
+const ROLE_TRANSLATIONS: Record<string, string> = {
+  Student: "Студент",
+  Teacher: "Преподаватель",
+  Dean: "Администратор",
+};
+
+function ProfileCard({ name, role, isConfirmed, group }: ProfileCardProps) {
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Ошибка при выходе из аккаунта:", error);
+    }
+  };
+
   return (
     <Card elevation={0} sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
       <Grid container spacing={2} alignItems="center">
@@ -10,7 +33,7 @@ function ProfileCard() {
 
         <Grid item xs={12} sm>
           <Typography variant="h6" fontWeight="bold">
-            Карпук Владислав Александрович
+            {name}
           </Typography>
           <Typography
             variant="body2"
@@ -23,9 +46,11 @@ function ProfileCard() {
               mt: 0.5,
             }}
           >
-            Студент
+            {ROLE_TRANSLATIONS[role[0]]}
           </Typography>
-          <Typography
+
+          {role.includes("Student") && (
+            <Typography
             variant="body2"
             sx={{
               ml: 1,
@@ -37,7 +62,24 @@ function ProfileCard() {
               mt: 0.5,
             }}
           >
-            972302
+            {group}
+          </Typography>
+          )}
+          
+          <Typography
+            variant="body2"
+            sx={{
+              ml: 1,
+              bgcolor: isConfirmed ? "#e8fcf4" : "#fce8e8",
+              color: isConfirmed ? "#0a7649" : "#c82d22",
+              display: "inline-block",
+              px: 2,
+              py: 0.5,
+              borderRadius: 1,
+              mt: 0.5,
+            }}
+          >
+            {isConfirmed ? "Подтверждён" : "Не подверждён"}
           </Typography>
         </Grid>
       </Grid>
@@ -56,6 +98,7 @@ function ProfileCard() {
             bgcolor: " #f7baba",
           },
         }}
+        onClick={handleLogout}
       >
         Выйти из аккаунта
       </Button>

@@ -1,34 +1,50 @@
-import { Card, Typography, Box, Dialog } from "@mui/material";
+import { Card, Typography, Dialog } from "@mui/material";
 import { useState } from "react";
+import dayjs from "dayjs";
+import "dayjs/locale/ru";
+import RequestInfo from "./RequsetInfo";
+
+dayjs.locale("ru");
 
 type Status = "Одобрено" | "На обработке" | "Отклонена";
 
 interface RequestProps {
-  startDate: string;
-  endDate: string;
+  id: string;
+  dateFrom: Date;
+  dateTo: Date;
   status: Status;
+  confirmationType: string;
 }
 
 const statusColors: Record<Status, string> = {
-  "Одобрено": "#e8fcf4",
+  Одобрено: "#e8fcf4",
   "На обработке": "#fff7db",
-  "Отклонена": "#fce8e8",
+  Отклонена: "#fce8e8",
 };
 
 const statusColorsHover: Record<Status, string> = {
-  "Одобрено": "#c5fce6",
+  Одобрено: "#c5fce6",
   "На обработке": "#f7ecba",
-  "Отклонена": "#f7baba",
+  Отклонена: "#f7baba",
 };
 
 const textStatusColors: Record<Status, string> = {
-  "Одобрено": "#0a7649",
+  Одобрено: "#0a7649",
   "На обработке": "#c8a122",
-  "Отклонена": "#c82d22",
+  Отклонена: "#c82d22",
 };
 
-const Request: React.FC<RequestProps> = ({ startDate, endDate, status }) => {
+const Request = ({
+  dateFrom,
+  dateTo,
+  status,
+  confirmationType,
+  id,
+}: RequestProps) => {
   const [open, setOpen] = useState(false);
+
+  const formattedDateFrom = dayjs(dateFrom).format("D MMMM YYYY");
+  const formattedDateTo = dayjs(dateTo).format("D MMMM YYYY");
 
   return (
     <>
@@ -44,8 +60,13 @@ const Request: React.FC<RequestProps> = ({ startDate, endDate, status }) => {
         }}
       >
         <Typography variant="h6">
-          {startDate} - {endDate}
+          {formattedDateFrom} - {formattedDateTo}
         </Typography>
+
+        <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+          {confirmationType}
+        </Typography>
+
         <Typography
           variant="body2"
           sx={{ color: textStatusColors[status], fontWeight: "bold" }}
@@ -55,12 +76,7 @@ const Request: React.FC<RequestProps> = ({ startDate, endDate, status }) => {
       </Card>
 
       <Dialog open={open} onClose={() => setOpen(false)}>
-        <Box p={3}>
-          <Typography variant="h6">Детали заявки</Typography>
-          <Typography>Дата начала: {startDate}</Typography>
-          <Typography>Дата окончания: {endDate}</Typography>
-          <Typography>Статус: {status}</Typography>
-        </Box>
+        <RequestInfo requestId={id} onClose={() => setOpen(false)} />
       </Dialog>
     </>
   );
