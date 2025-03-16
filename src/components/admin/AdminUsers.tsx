@@ -17,6 +17,7 @@ import {
 import {
   allUsers,
   confirmAccount,
+  updateUserGroup,
   updateUserRole,
 } from "../../api/adminEndpoints";
 import { UserInterface } from "../../interfaces/UserInterface";
@@ -31,11 +32,16 @@ const UserCard = ({
   isConfirmed,
   updateUserConfirmation,
   updateRole,
+  updateGroup, 
 }: UserInterface & {
   updateUserConfirmation: (userId: string, confirmed: boolean) => void;
   updateRole: (userId: string, newRoles: string[]) => void;
+  updateGroup: (userId: string, newGroup: string) => void;
 }) => {
   const [selectedRoles, setSelectedRoles] = useState<string[]>(roles);
+  const [isEditingGroup, setIsEditingGroup] = useState(false);
+  const [newGroup, setNewGroup] = useState(group || "");
+
   const handleRolesChange = (event: SelectChangeEvent<string[]>) => {
     setSelectedRoles(event.target.value as string[]);
   };
@@ -46,7 +52,7 @@ const UserCard = ({
       updateRole(id, newRoles);
       console.log("Роли сохранены");
     } catch (err) {
-      console.error("Ошибка при подтверждении:", err);
+      console.error("Ошибка при сохранении ролей:", err);
     }
   };
 
@@ -57,6 +63,16 @@ const UserCard = ({
       console.log("Статус профиля изменён");
     } catch (err) {
       console.error("Ошибка при подтверждении:", err);
+    }
+  };
+
+  const handleSaveGroupClick = async () => {
+    try {
+      await updateUserGroup({ userId: id, newGroup: newGroup });
+      updateGroup(id, newGroup);
+      setIsEditingGroup(false);
+    } catch (err) {
+      console.error("Ошибка при обновлении группы:", err);
     }
   };
 
@@ -72,7 +88,21 @@ const UserCard = ({
     >
       <Box>
         <Typography variant="h6">{name}</Typography>
-        {roles.includes("Student") && <Typography>Группа: {group}</Typography>}
+        {roles.includes("Student") && (
+          <Box display="flex" alignItems="center" gap={1}>
+          <span>Группа:</span>
+          {isEditingGroup ? (
+            <TextField
+              value={newGroup}
+              onChange={(e) => setNewGroup(e.target.value)}
+              size="small"
+              variant="outlined"
+            />
+          ) : (
+            <span>{group || "Не указано"}</span>
+          )}
+        </Box>
+        )}
         <Typography>
           Роли: {roles.map((role) => rolesMap[role]).join(", ")}
         </Typography>
@@ -155,6 +185,37 @@ const UserCard = ({
           >
             Сохранить роли
           </Button>
+
+          {roles.includes("Student") &&
+            (isEditingGroup ? (
+              <Button
+                disableRipple
+                variant="outlined"
+                size="small"
+                onClick={handleSaveGroupClick}
+                sx={{
+                  color: "#0060e6",
+                  fontWeight: "bold",
+                  borderColor: "#0060e6",
+                }}
+              >
+                Сохранить группу
+              </Button>
+            ) : (
+              <Button
+                disableRipple
+                variant="outlined"
+                size="small"
+                onClick={() => setIsEditingGroup(true)}
+                sx={{
+                  color: "#0060e6",
+                  fontWeight: "bold",
+                  borderColor: "#0060e6",
+                }}
+              >
+                Изменить группу
+              </Button>
+            ))}
         </Box>
       </Box>
     </Box>
@@ -212,6 +273,14 @@ const AdminUsers = () => {
     );
   };
 
+  const updateGroup = (id: string, newGroup: string) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === id ? { ...user, group: newGroup } : user
+      )
+    );
+  };
+
   return (
     <>
       <Box display="flex" flexDirection="column" gap={2} mb={2} mt={1}>
@@ -260,6 +329,7 @@ const AdminUsers = () => {
                 {...user}
                 updateUserConfirmation={updateUserConfirmation}
                 updateRole={updateUserRoles}
+                updateGroup={updateGroup}
               />
             ))}
           </Stack>

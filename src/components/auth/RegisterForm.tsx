@@ -1,5 +1,4 @@
 import { useForm, Controller } from "react-hook-form";
-import { useEffect } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import {
@@ -7,10 +6,10 @@ import {
   Button,
   Box,
   Typography,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import { registerUser } from "../../api/authEndpoints";
 import axios from "axios";
@@ -26,9 +25,12 @@ const schema = yup.object({
     .string()
     .oneOf([yup.ref("password")], "Пароли не совпадают")
     .required("Повторите пароль"),
-  role: yup.string().required("Выберите роль"),
-  group: yup.string().when("role", {
-    is: "Student",
+  roles: yup
+    .array()
+    .of(yup.string().required())
+    .required("Роль обязательна"),
+  group: yup.string().when("roles", {
+    is: (roles: string[]) => roles.includes("Student"),
     then: (schema) => schema.required("Введите номер группы"),
     otherwise: (schema) => schema.notRequired(),
   }),
@@ -44,22 +46,16 @@ const RegisterForm = () => {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: { role: "", group: "" },
+    defaultValues: { roles: [] as string[] },
   });
 
-  const role = watch("role");
-
-  useEffect(() => {
-    if (role === "Teacher") {
-      setValue("group", "-");
-    }
-  }, [role, setValue]);
+  const roles = watch("roles");
 
   const onSubmit = async (data: {
     name: string;
     login: string;
     password: string;
-    role: string;
+    roles: string[];
     group?: string;
   }) => {
     console.log("Данные формы:", data);
@@ -68,7 +64,7 @@ const RegisterForm = () => {
         data.name,
         data.login,
         data.password,
-        data.role,
+        data.roles,
         data.group || ""
       );
       localStorage.setItem("token", response.token);
@@ -107,21 +103,31 @@ const RegisterForm = () => {
         helperText={errors.login?.message}
       />
 
-      <FormControl fullWidth margin="normal" error={!!errors.role}>
+      <FormControl fullWidth margin="normal" error={!!errors.roles}>
         <InputLabel>Роль</InputLabel>
         <Controller
-          name="role"
+          name="roles"
           control={control}
           render={({ field }) => (
-            <Select {...field} label="Роль">
-              <MenuItem disableRipple value="Student">Студент</MenuItem>
-              <MenuItem disableRipple value="Teacher">Преподаватель</MenuItem>
+            <Select
+              {...field}
+              multiple
+              label="Роль"
+              value={roles}
+              onChange={(e) => setValue("roles", e.target.value as string[])}
+            >
+              <MenuItem disableRipple value="Student">
+                Студент
+              </MenuItem>
+              <MenuItem disableRipple value="Teacher">
+                Преподаватель
+              </MenuItem>
             </Select>
           )}
         />
       </FormControl>
 
-      {role === "Student" && (
+      {roles!.includes("Student") && (
         <TextField
           label="Номер группы"
           fullWidth
@@ -153,7 +159,6 @@ const RegisterForm = () => {
       />
 
       <Button
-        disableRipple
         type="submit"
         variant="outlined"
         color="primary"

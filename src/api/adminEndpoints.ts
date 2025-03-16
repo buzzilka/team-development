@@ -53,10 +53,23 @@ export const allRequests = async (params: {
   return response.data;
 };
 
-export const downloadRequests = async (params: {dateFrom: string, dateTo: string}) => {
+export const downloadRequests = async (params: {
+  dateFrom: string;
+  dateTo: string;
+}) => {
   const response = await apiClient.get(`/Admin/download-requests`, {
     responseType: "blob",
-    params: params
+    params: params,
+  });
+  return response.data;
+};
+
+export const updateUserGroup = async (params: {
+  userId: string;
+  newGroup: string;
+}) => {
+  const response = await apiClient.put(`/Admin/changeGroup`, null, {
+    params: params,
   });
   return response.data;
 };
