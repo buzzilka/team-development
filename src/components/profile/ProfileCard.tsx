@@ -1,20 +1,9 @@
 import { Card, Typography, Avatar, Button, Grid } from "@mui/material";
 import { logout } from "../../api/profileEndpoints";
+import { UserInterface } from "../../interfaces/UserInterface";
+import { rolesMap } from "../../styles/maps";
 
-interface ProfileCardProps {
-  name: string;
-  role: string[];
-  isConfirmed: boolean;
-  group?: string;
-}
-
-const ROLE_TRANSLATIONS: Record<string, string> = {
-  Student: "Студент",
-  Teacher: "Преподаватель",
-  Dean: "Администратор",
-};
-
-function ProfileCard({ name, role, isConfirmed, group }: ProfileCardProps) {
+function ProfileCard({ name, roles, isConfirmed, group }: UserInterface) {
   const handleLogout = async () => {
     try {
       await logout();
@@ -35,41 +24,45 @@ function ProfileCard({ name, role, isConfirmed, group }: ProfileCardProps) {
           <Typography variant="h6" fontWeight="bold">
             {name}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              bgcolor: "grey.200",
-              display: "inline-block",
-              px: 2,
-              py: 0.5,
-              borderRadius: 1,
-              mt: 0.5,
-            }}
-          >
-            {ROLE_TRANSLATIONS[role[0]]}
-          </Typography>
 
-          {role.includes("Student") && (
+          {roles.map((role, index) => (
             <Typography
-            variant="body2"
-            sx={{
-              ml: 1,
-              bgcolor: "grey.200",
-              display: "inline-block",
-              px: 2,
-              py: 0.5,
-              borderRadius: 1,
-              mt: 0.5,
-            }}
-          >
-            {group}
-          </Typography>
+              key={index}
+              variant="body2"
+              sx={{
+                bgcolor: "grey.200",
+                display: "inline-block",
+                px: 2,
+                py: 0.5,
+                borderRadius: 1,
+                mt: 0.5,
+                mr: 1,
+              }}
+            >
+              {rolesMap[role]}
+            </Typography>
+          ))}
+
+          {roles.includes("Student") && (
+            <Typography
+              variant="body2"
+              sx={{
+                bgcolor: "grey.200",
+                display: "inline-block",
+                px: 2,
+                py: 0.5,
+                borderRadius: 1,
+                mt: 0.5,
+                mr: 1,
+              }}
+            >
+              {group}
+            </Typography>
           )}
-          
+
           <Typography
             variant="body2"
             sx={{
-              ml: 1,
               bgcolor: isConfirmed ? "#e8fcf4" : "#fce8e8",
               color: isConfirmed ? "#0a7649" : "#c82d22",
               display: "inline-block",

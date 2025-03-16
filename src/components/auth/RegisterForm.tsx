@@ -114,8 +114,8 @@ const RegisterForm = () => {
           control={control}
           render={({ field }) => (
             <Select {...field} label="Роль">
-              <MenuItem value="Student">Студент</MenuItem>
-              <MenuItem value="Teacher">Преподаватель</MenuItem>
+              <MenuItem disableRipple value="Student">Студент</MenuItem>
+              <MenuItem disableRipple value="Teacher">Преподаватель</MenuItem>
             </Select>
           )}
         />

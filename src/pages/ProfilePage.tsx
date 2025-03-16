@@ -1,47 +1,23 @@
 import ProfileCard from "../components/profile/ProfileCard";
 import RequestsCard from "../components/request/RequestsCard";
 import { userInfo } from "../api/profileEndpoints";
-import { requestsInfo } from "../api/studentEndpoints";
 import { useState, useEffect } from "react";
-import { CircularProgress, styled } from "@mui/material";
-
-const CenteredProgress = styled(CircularProgress)({
-  position: "fixed",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  zIndex: 9999,
-});
-
-interface User {
-  id: string;
-  isConfirmed: boolean;
-  name: string;
-  roles: string[];
-  group?: string;
-}
-
-interface RequestData {
-  id: string;
-  dateFrom: Date;
-  dateTo: Date;
-  status: string;
-  confirmationType: string;
-}
+import AdminPanel from "../components/admin/AdminPanel";
+import { UserInterface } from "../interfaces/UserInterface";
+import { CenteredProgress } from "../styles/CentredProgress";
+import { Card } from "@mui/material";
 
 const ProfilePage = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [requests, setRequests] = useState<RequestData[]>([]);
+  const [user, setUser] = useState<UserInterface | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const userData = await userInfo();
-        const requestsData = await requestsInfo();
         setUser(userData);
-        setRequests(requestsData.listLightRequests);
         localStorage.setItem("id", userData.id);
+        localStorage.setItem("roles", userData.roles);
       } catch (error) {
         console.error("Ошибка при получении данных:", error);
       } finally {
@@ -52,18 +28,30 @@ const ProfilePage = () => {
     fetchUserInfo();
   }, []);
 
-  if (loading) return <CenteredProgress/>;
+  if (loading) return <CenteredProgress />;
   if (!user) {
     localStorage.clear();
     window.location.href = "/auth";
     return;
-  };
+  }
 
   return (
     <>
-      <ProfileCard name={user.name} role={user.roles} group={user.group} isConfirmed={user.isConfirmed} />
+      <ProfileCard
+        id={user.id}
+        name={user.name}
+        roles={user.roles}
+        group={user.group}
+        isConfirmed={user.isConfirmed}
+      />
 
-      {user.isConfirmed && user.roles.includes("Student") && <RequestsCard requests={requests}/>}
+      {user.isConfirmed && user.roles.includes("Student") && (
+        <Card elevation={0} sx={{ maxWidth: 800, mx: "auto", p: 3, mt: 1 }}>
+          <RequestsCard role="Student" /> 
+        </Card>
+      )}
+
+      {user.isConfirmed && user.roles.includes("Dean") && <AdminPanel />}
     </>
   );
 };

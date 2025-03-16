@@ -11,21 +11,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { styled } from "@mui/material/styles";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { uploadRequest } from "../../api/studentEndpoints";
-
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-});
+import { ConfirmationType } from "../../interfaces/RequestInterface";
+import { VisuallyHiddenInput } from "../../styles/VisuallyHiddenInput";
 
 interface CreateRequestProps {
   open: boolean;
@@ -33,9 +22,7 @@ interface CreateRequestProps {
 }
 
 const CreateRequest = ({ open, onClose }: CreateRequestProps) => {
-  const [type, setType] = useState<"Medical" | "Family" | "Educational" | "">(
-    ""
-  );
+  const [type, setType] = useState<ConfirmationType>("Medical");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -43,7 +30,7 @@ const CreateRequest = ({ open, onClose }: CreateRequestProps) => {
   const [error, setError] = useState("");
 
   const handleTypeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setType(event.target.value as "Medical" | "Family" | "Educational");
+    setType(event.target.value as ConfirmationType);
     setError("");
   };
 
@@ -96,7 +83,7 @@ const CreateRequest = ({ open, onClose }: CreateRequestProps) => {
     }
 
     if (startDate > endDate && type !== "Medical") {
-      setError("Дата начала не может быть позже чем дата окончания");
+      setError("Дата начала не может быть позже даты окончания.");
       return false;
     }
 
@@ -113,7 +100,7 @@ const CreateRequest = ({ open, onClose }: CreateRequestProps) => {
     const formData = new FormData();
     formData.append("DateFrom", startDate);
     if (endDate) formData.append("DateTo", endDate);
-    formData.append("ConfirmationType", type);
+    if (type) formData.append("ConfirmationType", type);
     files.forEach((file) => formData.append("Files", file));
 
     try {
@@ -139,9 +126,15 @@ const CreateRequest = ({ open, onClose }: CreateRequestProps) => {
             value={type}
             onChange={handleTypeChange}
           >
-            <MenuItem value="Medical">Больничный</MenuItem>
-            <MenuItem value="Family">По семейным обстоятельствам</MenuItem>
-            <MenuItem value="Educational">Учебная</MenuItem>
+            <MenuItem disableRipple value="Medical">
+              Больничный
+            </MenuItem>
+            <MenuItem disableRipple value="Family">
+              По семейным обстоятельствам
+            </MenuItem>
+            <MenuItem disableRipple value="Educational">
+              Учебная
+            </MenuItem>
           </TextField>
 
           <TextField

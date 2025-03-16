@@ -3,36 +3,15 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
 import RequestInfo from "./RequsetInfo";
+import { RequestInterface, Status } from "../../interfaces/RequestInterface";
+import { statusMap, typeMap } from "../../styles/maps";
+import {
+  statusColors,
+  statusColorsHover,
+  textColors,
+} from "../../styles/colors";
 
 dayjs.locale("ru");
-
-type Status = "Одобрено" | "На обработке" | "Отклонена";
-
-interface RequestProps {
-  id: string;
-  dateFrom: Date;
-  dateTo: Date;
-  status: Status;
-  confirmationType: string;
-}
-
-const statusColors: Record<Status, string> = {
-  Одобрено: "#e8fcf4",
-  "На обработке": "#fff7db",
-  Отклонена: "#fce8e8",
-};
-
-const statusColorsHover: Record<Status, string> = {
-  Одобрено: "#c5fce6",
-  "На обработке": "#f7ecba",
-  Отклонена: "#f7baba",
-};
-
-const textStatusColors: Record<Status, string> = {
-  Одобрено: "#0a7649",
-  "На обработке": "#c8a122",
-  Отклонена: "#c82d22",
-};
 
 const Request = ({
   dateFrom,
@@ -40,7 +19,19 @@ const Request = ({
   status,
   confirmationType,
   id,
-}: RequestProps) => {
+  userName,
+  updateStatus,
+  updateInfo,
+}: RequestInterface & {
+  updateStatus: (requestId: string, newStatus: Status) => void;
+
+  updateInfo: (
+    requestId: string,
+    newDateFrom: string,
+    newDateTo: string,
+    status: Status
+  ) => void;
+}) => {
   const [open, setOpen] = useState(false);
 
   const formattedDateFrom = dayjs(dateFrom).format("D MMMM YYYY");
@@ -52,31 +43,42 @@ const Request = ({
         elevation={0}
         onClick={() => setOpen(true)}
         sx={{
-          bgcolor: `${statusColors[status]}`,
+          bgcolor: `${statusColors[statusMap[status]]}`,
           p: 2,
           cursor: "pointer",
           transition: "0.3s",
-          "&:hover": { bgcolor: `${statusColorsHover[status]}` },
+          "&:hover": { bgcolor: `${statusColorsHover[statusMap[status]]}` },
         }}
       >
         <Typography variant="h6">
           {formattedDateFrom} - {formattedDateTo}
         </Typography>
 
+        {userName && (
+          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+            {userName}
+          </Typography>
+        )}
+
         <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-          {confirmationType}
+          {typeMap[confirmationType]}
         </Typography>
 
         <Typography
           variant="body2"
-          sx={{ color: textStatusColors[status], fontWeight: "bold" }}
+          sx={{ color: textColors[statusMap[status]], fontWeight: "bold" }}
         >
-          {status}
+          {statusMap[status]}
         </Typography>
       </Card>
 
       <Dialog open={open} onClose={() => setOpen(false)}>
-        <RequestInfo requestId={id} onClose={() => setOpen(false)} />
+        <RequestInfo
+          requestId={id}
+          onClose={() => setOpen(false)}
+          updateStatus={updateStatus}
+          updateInfo={updateInfo}
+        />
       </Dialog>
     </>
   );

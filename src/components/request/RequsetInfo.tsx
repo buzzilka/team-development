@@ -8,51 +8,59 @@ import {
   MenuItem,
   CircularProgress,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { fetchRequest, updateRequest } from "../../api/studentEndpoints";
-import { styled } from "@mui/material/styles";
+import { RequestInterface, Status } from "../../interfaces/RequestInterface";
+import { VisuallyHiddenInput } from "../../styles/VisuallyHiddenInput";
+import { CenteredProgress } from "../../styles/CentredProgress";
+import { confirmRequest } from "../../api/adminEndpoints";
 
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-});
+const getFileType = (byteArray: Uint8Array): string => {
+  const pdfSignature = [0x25, 0x50, 0x44, 0x46];
+  const jpegSignature = [0xff, 0xd8, 0xff];
+  const pngSignature = [0x89, 0x50, 0x4e, 0x47];
 
-const CenteredProgress = styled(CircularProgress)({
-  position: "fixed",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  zIndex: 9999,
-});
-
-interface Request {
-  confirmationType: "Medical" | "Family" | "Educational";
-  dateFrom: string;
-  dateTo?: string;
-  files: File[];
-}
+  if (
+    byteArray
+      .slice(0, pdfSignature.length)
+      .every((byte, i) => byte === pdfSignature[i])
+  ) {
+    return "pdf";
+  } else if (
+    byteArray
+      .slice(0, jpegSignature.length)
+      .every((byte, i) => byte === jpegSignature[i])
+  ) {
+    return "jpg";
+  } else if (
+    byteArray
+      .slice(0, pngSignature.length)
+      .every((byte, i) => byte === pngSignature[i])
+  ) {
+    return "png";
+  } else {
+    return "unknown";
+  }
+};
 
 interface RequestInfoProps {
   requestId: string;
   onClose: () => void;
+  updateStatus: (id: string, status: Status) => void;
+  updateInfo: (id: string, newDateFrom: string, newDateTo: string, status: Status) => void;
 }
 
-const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
-  const [request, setRequest] = useState<Request | null>(null);
+const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestInfoProps) => {
+  const [request, setRequest] = useState<RequestInterface | null>(null);
   const [editable, setEditable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
+  const isSmallScreen = useMediaQuery("(max-width:630px)");
 
   useEffect(() => {
     const loadRequest = async () => {
@@ -69,8 +77,8 @@ const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
   }, [requestId]);
 
   const handleEdit = () => {
-    if (request?.confirmationType === "Educational") {
-      setError("Заявку с типом 'Учебная' редактировать нельзя.");
+    if (request?.confirmationType === "Educational" && !localStorage.getItem("roles")?.includes("Dean")) {
+      setError("Заявку с типом 'Учебная' может редактировать только деканат.");
       return;
     }
     setEditable(true);
@@ -129,7 +137,7 @@ const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
     try {
       await updateRequest(requestId, formData);
       onClose();
-      window.location.reload();
+      updateInfo(requestId, formData.get("DateFrom")!.toString(), formData.get("DateTo")!.toString(), "Pending")
     } catch (error) {
       console.log(error);
       setError("Ошибка при обновлении заявки.");
@@ -138,12 +146,23 @@ const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
     }
   };
 
+  const handleConfirmRequset = async (id: string, requestStatus: Status) => {
+    try {
+      await confirmRequest({ requestId: id, status: requestStatus });
+      updateStatus(id, requestStatus); 
+      onClose();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+
   if (!request) return <CenteredProgress />;
 
   return (
     <>
       <DialogTitle>Детали заявки</DialogTitle>
-      <DialogContent sx={{ minWidth: 500 }}>
+      <DialogContent sx={{ minWidth: isSmallScreen ? "100%" : 500 }}>
         <Stack spacing={2} mt={1}>
           <TextField
             select
@@ -151,9 +170,15 @@ const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
             value={request.confirmationType}
             disabled
           >
-            <MenuItem value="Medical">Больничный</MenuItem>
-            <MenuItem value="Family">По семейным обстоятельствам</MenuItem>
-            <MenuItem value="Educational">Учебная</MenuItem>
+            <MenuItem disableRipple value="Medical">
+              Больничный
+            </MenuItem>
+            <MenuItem disableRipple value="Family">
+              По семейным обстоятельствам
+            </MenuItem>
+            <MenuItem disableRipple value="Educational">
+              Учебная
+            </MenuItem>
           </TextField>
 
           <TextField
@@ -185,13 +210,54 @@ const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
           )}
 
           {existingFiles.length > 0 && (
-            <Typography>
-              Количество имеющихся файлов: {existingFiles.length} (при
-              редактировании старые файлы будут удалены)
-            </Typography>
+            <>
+              <Typography>
+                Количество имеющихся файлов: {existingFiles.length} (при
+                редактировании старые файлы будут удалены)
+              </Typography>
+              <Button
+                fullWidth={isSmallScreen}
+                disableRipple
+                variant="outlined"
+                onClick={() => {
+                  existingFiles.forEach((fileBase64, index) => {
+                    try {
+                      const byteCharacters = atob(fileBase64);
+
+                      const byteArray = new Uint8Array(byteCharacters.length);
+                      for (let i = 0; i < byteCharacters.length; i++) {
+                        byteArray[i] = byteCharacters.charCodeAt(i);
+                      }
+
+                      const fileType = getFileType(byteArray);
+
+                      const mimeTypes: Record<string, string> = {
+                        pdf: "application/pdf",
+                        jpg: "image/jpeg",
+                        png: "image/png",
+                        unknown: "application/octet-stream",
+                      };
+
+                      const blob = new Blob([byteArray], {
+                        type: mimeTypes[fileType],
+                      });
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(blob);
+                      link.download = `file_${index + 1}.${fileType}`;
+                      link.click();
+                    } catch (error) {
+                      console.error("Ошибка при скачивании файла:", error);
+                      setError("Не удалось скачать файлы");
+                    }
+                  });
+                }}
+              >
+                Скачать файлы
+              </Button>
+            </>
           )}
 
-          {editable && (
+          {editable && request.confirmationType !== "Family" && (
             <Stack direction="row" alignItems="center" spacing={1}>
               <Button
                 disableRipple
@@ -218,7 +284,13 @@ const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
           {error && <Typography color="error">{error}</Typography>}
         </Stack>
       </DialogContent>
-      <DialogActions>
+      <DialogActions
+        sx={{
+          flexDirection: isSmallScreen ? "column" : "row",
+          justifyContent: "center",
+          "& > *": { ml: isSmallScreen ? "0 !important" : "1"},
+        }}
+      >
         {editable ? (
           <>
             <Button
@@ -226,6 +298,8 @@ const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
               onClick={handleCancelEdit}
               variant="outlined"
               color="error"
+              fullWidth={isSmallScreen}
+              sx={{mb: 1}}
             >
               Отмена
             </Button>
@@ -234,14 +308,48 @@ const RequestInfo = ({ requestId, onClose }: RequestInfoProps) => {
               onClick={handleSubmit}
               variant="outlined"
               disabled={loading}
+              fullWidth={isSmallScreen}
+              sx={{mb: 1}}
             >
               {loading ? <CircularProgress size={24} /> : "Сохранить изменения"}
             </Button>
           </>
         ) : (
-          <Button disableRipple onClick={handleEdit} variant="outlined">
-            Редактировать
-          </Button>
+          <>
+            {localStorage.getItem("roles")?.includes("Dean") && (
+              <>
+                <Button
+                  disableRipple
+                  variant="outlined"
+                  color="success"
+                  fullWidth={isSmallScreen}
+                  onClick={() => handleConfirmRequset(request.id, "Approved")}
+                  sx={{mb: 1}}
+                >
+                  Принять заявку
+                </Button>
+                <Button
+                  disableRipple
+                  variant="outlined"
+                  color="error"
+                  fullWidth={isSmallScreen}
+                  onClick={() => handleConfirmRequset(request.id, "Rejected")}
+                  sx={{mb: 1}}
+                >
+                  Отклонить заявку
+                </Button>
+              </>
+            )}
+            <Button
+              disableRipple
+              onClick={handleEdit}
+              variant="outlined"
+              fullWidth={isSmallScreen}
+              sx={{mb: 1}}
+            >
+              Редактировать
+            </Button>
+          </>
         )}
       </DialogActions>
     </>
