@@ -127,6 +127,7 @@ const UserCard = ({
             <Select
               multiple
               value={selectedRoles}
+              disabled={currentUserId === id}
               onChange={handleRolesChange}
               renderValue={(selected) =>
                 (selected as string[]).map((role) => rolesMap[role]).join(", ")
@@ -186,6 +187,7 @@ const UserCard = ({
               disableRipple
               variant="outlined"
               size="small"
+              disabled={currentUserId === id}
               onClick={() => handleSaveRolesClick(id, selectedRoles)}
               sx={{
                 color: "#0060e6",
