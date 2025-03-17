@@ -43,14 +43,19 @@ const UserCard = ({
   const [selectedRoles, setSelectedRoles] = useState<string[]>(roles);
   const [isEditingGroup, setIsEditingGroup] = useState(false);
   const [newGroup, setNewGroup] = useState(group || "");
+  const currentUserId = localStorage.getItem("id");
 
   const handleRolesChange = (event: SelectChangeEvent<string[]>) => {
     setSelectedRoles(event.target.value as string[]);
   };
 
   const handleSaveRolesClick = async (id: string, newRoles: string[]) => {
-    if (newRoles.includes("Student") && newRoles.includes("Dean")){
-      alert("Сотрудник деканата не может быть студентом")
+    if (newRoles.includes("Student") && newRoles.includes("Dean")) {
+      alert("Сотрудник деканата не может быть студентом");
+      return;
+    }
+    if (newRoles.length == 0){
+      alert("Нельзя убрать все роли у пользователя");
       return;
     }
     try {
@@ -155,6 +160,7 @@ const UserCard = ({
                 disableRipple
                 variant="outlined"
                 size="small"
+                disabled={currentUserId === id}
                 onClick={() => handleConfirmClick(false)}
                 sx={{
                   color: "#0060e6",
@@ -169,6 +175,7 @@ const UserCard = ({
                 disableRipple
                 variant="outlined"
                 size="small"
+                disabled={currentUserId === id}
                 onClick={() => handleConfirmClick(true)}
                 sx={{
                   color: "#0060e6",
