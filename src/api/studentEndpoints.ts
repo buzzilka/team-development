@@ -12,9 +12,10 @@ export const requestsInfo = async (params: {
 };
 
 export const uploadRequest = async (data: FormData) => {
-  return apiClient.post("/Request/create", data, {
+  const response = await apiClient.post("/Request/create", data, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return response.data;
 };
 
 export const fetchRequest = async (requestId: string) => {

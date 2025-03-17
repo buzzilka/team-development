@@ -44,14 +44,17 @@ const ProfilePage = () => {
         group={user.group}
         isConfirmed={user.isConfirmed}
       />
+      
+      {user.isConfirmed && user.roles.includes("Teacher") && !user.roles.includes("Dean") && <AdminPanel role="Teacher" />}
 
       {user.isConfirmed && user.roles.includes("Student") && (
         <Card elevation={0} sx={{ maxWidth: 800, mx: "auto", p: 3, mt: 1 }}>
-          <RequestsCard role="Student" /> 
+          <RequestsCard role="Student" />
         </Card>
       )}
 
-      {user.isConfirmed && user.roles.includes("Dean") && <AdminPanel />}
+      {user.isConfirmed && user.roles.includes("Dean") && <AdminPanel role="Dean" />}
+
     </>
   );
 };

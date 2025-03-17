@@ -4,7 +4,7 @@ import apiClient from "./apiClient";
 export const allUsers = async (params: {
   onlyConfirmed: boolean;
   onlyTheseRoles: string | string[];
-  group: string;
+  group?: string;
   page: number;
   size: number;
 }) => {

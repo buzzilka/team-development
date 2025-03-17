@@ -12,16 +12,17 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { uploadRequest } from "../../api/studentEndpoints";
-import { ConfirmationType } from "../../interfaces/RequestInterface";
+import { fetchRequest, uploadRequest } from "../../api/studentEndpoints";
+import { ConfirmationType, RequestInterface } from "../../interfaces/RequestInterface";
 import { VisuallyHiddenInput } from "../../styles/VisuallyHiddenInput";
 
 interface CreateRequestProps {
   open: boolean;
   onClose: () => void;
+  onRequestCreated: (newRequest: RequestInterface) => void;
 }
 
-const CreateRequest = ({ open, onClose }: CreateRequestProps) => {
+const CreateRequest = ({ open, onClose, onRequestCreated }: CreateRequestProps) => {
   const [type, setType] = useState<ConfirmationType>("Medical");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -104,9 +105,13 @@ const CreateRequest = ({ open, onClose }: CreateRequestProps) => {
     files.forEach((file) => formData.append("Files", file));
 
     try {
-      await uploadRequest(formData);
+      const response = await uploadRequest(formData);
+
+      const newRequest = await fetchRequest(response.id);
+
+      onRequestCreated(newRequest); 
+
       onClose();
-      window.location.reload();
     } catch (error) {
       console.log(error);
       setError("Ошибка при отправке заявки. Попробуйте еще раз.");

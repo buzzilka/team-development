@@ -115,6 +115,10 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
     );
   };
 
+  const updateRequests = (newRequest: RequestInterface) => {
+    setRequests((prevRequests) => [...prevRequests, newRequest]);
+  };
+
   return (
     <Card elevation={0} sx={{ maxWidth: 800, mx: "auto", mt: 1 }}>
       <Typography variant="h5" fontWeight="bold" mb={2}>
@@ -169,7 +173,7 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
             Дата создания: сначала старые
           </MenuItem>
           <MenuItem disableRipple value="CreatedDesc">
-            Дата создания: сначала новые
+            Дата создания: сначала старые
           </MenuItem>
         </Select>
         {role === "Dean" && (
@@ -275,7 +279,7 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
             Создать заявку
           </Button>
 
-          <CreateRequest open={open} onClose={() => setOpen(false)} />
+          <CreateRequest open={open} onClose={() => setOpen(false)}  onRequestCreated={updateRequests}/>
         </>
       )}
     </Card>

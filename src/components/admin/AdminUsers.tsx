@@ -32,11 +32,13 @@ const UserCard = ({
   isConfirmed,
   updateUserConfirmation,
   updateRole,
-  updateGroup, 
+  updateGroup,
+  userRole,
 }: UserInterface & {
   updateUserConfirmation: (userId: string, confirmed: boolean) => void;
   updateRole: (userId: string, newRoles: string[]) => void;
   updateGroup: (userId: string, newGroup: string) => void;
+  userRole: string;
 }) => {
   const [selectedRoles, setSelectedRoles] = useState<string[]>(roles);
   const [isEditingGroup, setIsEditingGroup] = useState(false);
@@ -90,18 +92,18 @@ const UserCard = ({
         <Typography variant="h6">{name}</Typography>
         {roles.includes("Student") && (
           <Box display="flex" alignItems="center" gap={1}>
-          <span>Группа:</span>
-          {isEditingGroup ? (
-            <TextField
-              value={newGroup}
-              onChange={(e) => setNewGroup(e.target.value)}
-              size="small"
-              variant="outlined"
-            />
-          ) : (
-            <span>{group || "Не указано"}</span>
-          )}
-        </Box>
+            <span>Группа:</span>
+            {isEditingGroup ? (
+              <TextField
+                value={newGroup}
+                onChange={(e) => setNewGroup(e.target.value)}
+                size="small"
+                variant="outlined"
+              />
+            ) : (
+              <span>{group || "Не указано"}</span>
+            )}
+          </Box>
         )}
         <Typography>
           Роли: {roles.map((role) => rolesMap[role]).join(", ")}
@@ -114,115 +116,121 @@ const UserCard = ({
         </Typography>
       </Box>
 
-      <Box display="flex" flexDirection="column" gap={2}>
-        <FormControl sx={{ maxWidth: "100%" }}>
-          <Select
-            multiple
-            value={selectedRoles}
-            onChange={handleRolesChange}
-            renderValue={(selected) =>
-              (selected as string[]).map((role) => rolesMap[role]).join(", ")
-            }
-            sx={{
-              color: "#0060e6",
-              fontWeight: "bold",
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#0060e6",
-              },
-            }}
-          >
-            {Object.entries(rolesMap).map(([value, label]) => (
-              <MenuItem disableRipple key={value} value={value}>
-                <Checkbox
-                  disableRipple
-                  checked={selectedRoles.includes(value)}
-                />
-                <ListItemText primary={label} />
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Box display="flex" flexDirection="column" gap={1}>
-          {isConfirmed ? (
-            <Button
-              disableRipple
-              variant="outlined"
-              size="small"
-              onClick={() => handleConfirmClick(false)}
+      {userRole === "Dean" && (
+        <Box display="flex" flexDirection="column" gap={2}>
+          <FormControl sx={{ maxWidth: "100%" }}>
+            <Select
+              multiple
+              value={selectedRoles}
+              onChange={handleRolesChange}
+              renderValue={(selected) =>
+                (selected as string[]).map((role) => rolesMap[role]).join(", ")
+              }
               sx={{
                 color: "#0060e6",
                 fontWeight: "bold",
-                borderColor: "#0060e6",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#0060e6",
+                },
               }}
             >
-              Отменить подтверждение аккаунта
-            </Button>
-          ) : (
-            <Button
-              disableRipple
-              variant="outlined"
-              size="small"
-              onClick={() => handleConfirmClick(true)}
-              sx={{
-                color: "#0060e6",
-                fontWeight: "bold",
-                borderColor: "#0060e6",
-              }}
-            >
-              Подтвердить аккаунт
-            </Button>
-          )}
-          <Button
-            disableRipple
-            variant="outlined"
-            size="small"
-            onClick={() => handleSaveRolesClick(id, selectedRoles)}
-            sx={{
-              color: "#0060e6",
-              fontWeight: "bold",
-              borderColor: "#0060e6",
-            }}
-          >
-            Сохранить роли
-          </Button>
-
-          {roles.includes("Student") &&
-            (isEditingGroup ? (
+              {Object.entries(rolesMap).map(([value, label]) => (
+                <MenuItem disableRipple key={value} value={value}>
+                  <Checkbox
+                    disableRipple
+                    checked={selectedRoles.includes(value)}
+                  />
+                  <ListItemText primary={label} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Box display="flex" flexDirection="column" gap={1}>
+            {isConfirmed ? (
               <Button
                 disableRipple
                 variant="outlined"
                 size="small"
-                onClick={handleSaveGroupClick}
+                onClick={() => handleConfirmClick(false)}
                 sx={{
                   color: "#0060e6",
                   fontWeight: "bold",
                   borderColor: "#0060e6",
                 }}
               >
-                Сохранить группу
+                Отменить подтверждение аккаунта
               </Button>
             ) : (
               <Button
                 disableRipple
                 variant="outlined"
                 size="small"
-                onClick={() => setIsEditingGroup(true)}
+                onClick={() => handleConfirmClick(true)}
                 sx={{
                   color: "#0060e6",
                   fontWeight: "bold",
                   borderColor: "#0060e6",
                 }}
               >
-                Изменить группу
+                Подтвердить аккаунт
               </Button>
-            ))}
+            )}
+            <Button
+              disableRipple
+              variant="outlined"
+              size="small"
+              onClick={() => handleSaveRolesClick(id, selectedRoles)}
+              sx={{
+                color: "#0060e6",
+                fontWeight: "bold",
+                borderColor: "#0060e6",
+              }}
+            >
+              Сохранить роли
+            </Button>
+
+            {roles.includes("Student") &&
+              (isEditingGroup ? (
+                <Button
+                  disableRipple
+                  variant="outlined"
+                  size="small"
+                  onClick={handleSaveGroupClick}
+                  sx={{
+                    color: "#0060e6",
+                    fontWeight: "bold",
+                    borderColor: "#0060e6",
+                  }}
+                >
+                  Сохранить группу
+                </Button>
+              ) : (
+                <Button
+                  disableRipple
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setIsEditingGroup(true)}
+                  sx={{
+                    color: "#0060e6",
+                    fontWeight: "bold",
+                    borderColor: "#0060e6",
+                  }}
+                >
+                  Изменить группу
+                </Button>
+              ))}
+          </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 };
 
-const AdminUsers = () => {
+interface AdminUsersProps {
+  role: string;
+}
+
+const AdminUsers = ({ role }: AdminUsersProps) => {
   const [users, setUsers] = useState<UserInterface[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -235,23 +243,38 @@ const AdminUsers = () => {
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
+    let response;
+    let params;
     try {
-      const params = {
-        onlyConfirmed,
-        onlyTheseRoles: selectedRole ? selectedRole : [],
-        group: groupSearch,
-        page,
-        size: pageSize,
-      };
-      const response = await allUsers(params);
-      setUsers(response.value.users);
-      setTotalPages(response.value.pagination.count);
+      if (role === "Dean") {
+        params = {
+          onlyConfirmed,
+          onlyTheseRoles: selectedRole ? selectedRole : [],
+          group: groupSearch,
+          page,
+          size: pageSize,
+        };
+        response = await allUsers(params);
+        setUsers(response.value.users);
+        setTotalPages(response.value.pagination.count);
+      } else if (role === "Teacher") {
+        params = {
+          onlyConfirmed: true,
+          onlyTheseRoles: "Student",
+          group: groupSearch,
+          page,
+          size: pageSize,
+        };
+        response = await allUsers(params);
+        setUsers(response.value.users);
+        setTotalPages(response.value.pagination.count);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Неизвестная ошибка");
     } finally {
       setLoading(false);
     }
-  }, [onlyConfirmed, selectedRole, groupSearch, page, pageSize]);
+  }, [onlyConfirmed, selectedRole, groupSearch, page, pageSize, role]);
 
   useEffect(() => {
     fetchUsers();
@@ -284,30 +307,34 @@ const AdminUsers = () => {
   return (
     <>
       <Box display="flex" flexDirection="column" gap={2} mb={2} mt={1}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={onlyConfirmed}
-              onChange={(e) => setOnlyConfirmed(e.target.checked)}
+        {role === "Dean" && (
+          <>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={onlyConfirmed}
+                  onChange={(e) => setOnlyConfirmed(e.target.checked)}
+                />
+              }
+              label="Только подтвержденные"
             />
-          }
-          label="Только подтвержденные"
-        />
-        <Select
-          value={selectedRole}
-          onChange={(e) => setSelectedRole(e.target.value)}
-          displayEmpty
-        >
-          <MenuItem disableRipple value="">
-            Все роли
-          </MenuItem>
-          <MenuItem disableRipple value="Student">
-            Студент
-          </MenuItem>
-          <MenuItem disableRipple value="Teacher">
-            Преподаватель
-          </MenuItem>
-        </Select>
+            <Select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              displayEmpty
+            >
+              <MenuItem disableRipple value="">
+                Все роли
+              </MenuItem>
+              <MenuItem disableRipple value="Student">
+                Студент
+              </MenuItem>
+              <MenuItem disableRipple value="Teacher">
+                Преподаватель
+              </MenuItem>
+            </Select>
+          </>
+        )}
         <TextField
           label="Группа"
           variant="outlined"
@@ -330,6 +357,7 @@ const AdminUsers = () => {
                 updateUserConfirmation={updateUserConfirmation}
                 updateRole={updateUserRoles}
                 updateGroup={updateGroup}
+                userRole={role}
               />
             ))}
           </Stack>

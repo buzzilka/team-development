@@ -20,13 +20,13 @@ const Request = ({
   confirmationType,
   id,
   userName,
-  updateStatus,
+  updateStatus, 
   updateInfo,
 }: RequestInterface & {
   updateStatus: (requestId: string, newStatus: Status) => void;
 
   updateInfo: (
-    requestId: string,
+    requsetId: string,
     newDateFrom: string,
     newDateTo: string,
     status: Status
