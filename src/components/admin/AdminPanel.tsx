@@ -5,10 +5,10 @@ import RequestsCard from "../request/RequestsCard";
 import RequestsDownload from "./RequestsDownload";
 
 interface AdminPannelProps {
-  role: string;
+  roles: string[];
 }
 
-const AdminPannel = ({ role }: AdminPannelProps) => {
+const AdminPannel = ({ roles }: AdminPannelProps) => {
   const storedTab = localStorage.getItem("authPageTab");
   const [tab, setTab] = useState(storedTab ? Number(storedTab) : 0);
 
@@ -21,10 +21,28 @@ const AdminPannel = ({ role }: AdminPannelProps) => {
     theme.breakpoints.down("sm")
   );
 
+  const hasRole = (role: string) => roles.includes(role);
+
   const tabs = [];
-  if (role === "Dean")
+  if (hasRole("Dean")) {
+    tabs.push({ label: "Пользователи", component: <AdminUsers role={"Dean"} /> });
     tabs.push({ label: "Заявки", component: <RequestsCard role="Dean" /> });
-  tabs.push({ label: "Пользователи", component: <AdminUsers role={role} /> });
+  }
+  if (hasRole("Teacher") && hasRole("Student"))
+    tabs.push({
+      label: "Мои заявки",
+      component: <RequestsCard role={"Student"} />,
+    });
+  if (hasRole("Teacher") && hasRole("Dean"))
+    tabs.push({
+      label: "Пользователи",
+      component: <AdminUsers role={"Dean"} />,
+    });
+  if (hasRole("Teacher") && !hasRole("Dean"))
+    tabs.push({
+      label: "Пользователи",
+      component: <AdminUsers role={"Teacher"} />,
+    });
   tabs.push({
     label: "Выгрузка одобренных заявок",
     component: <RequestsDownload />,

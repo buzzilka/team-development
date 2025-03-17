@@ -35,6 +35,8 @@ const ProfilePage = () => {
     return;
   }
 
+  const hasRole = (role: string) => user.roles.includes(role);
+
   return (
     <>
       <ProfileCard
@@ -44,17 +46,23 @@ const ProfilePage = () => {
         group={user.group}
         isConfirmed={user.isConfirmed}
       />
-      
-      {user.isConfirmed && user.roles.includes("Teacher") && !user.roles.includes("Dean") && <AdminPanel role="Teacher" />}
 
-      {user.isConfirmed && user.roles.includes("Student") && (
-        <Card elevation={0} sx={{ maxWidth: 800, mx: "auto", p: 3, mt: 1 }}>
-          <RequestsCard role="Student" />
-        </Card>
+      {user.isConfirmed && (
+        <>
+          {hasRole("Teacher") && !hasRole("Student") && !hasRole("Dean") && (
+            <AdminPanel roles={user.roles} />
+          )}
+          {hasRole("Teacher") && hasRole("Student") && (
+            <AdminPanel roles={user.roles} />
+          )}
+          {hasRole("Dean") && <AdminPanel roles={user.roles} />}
+          {hasRole("Student") && !hasRole("Teacher") && (
+            <Card elevation={0} sx={{ maxWidth: 800, mx: "auto", p: 3, mt: 1 }}>
+              <RequestsCard role="Student" />
+            </Card>
+          )}
+        </>
       )}
-
-      {user.isConfirmed && user.roles.includes("Dean") && <AdminPanel role="Dean" />}
-
     </>
   );
 };
