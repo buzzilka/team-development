@@ -49,14 +49,10 @@ const ProfilePage = () => {
 
       {user.isConfirmed && (
         <>
-          {hasRole("Teacher") && !hasRole("Student") && !hasRole("Dean") && (
+          {(hasRole("Teacher") || hasRole("Dean")) && (
             <AdminPanel roles={user.roles} />
           )}
-          {hasRole("Teacher") && hasRole("Student") && (
-            <AdminPanel roles={user.roles} />
-          )}
-          {hasRole("Dean") && <AdminPanel roles={user.roles} />}
-          {hasRole("Student") && !hasRole("Teacher") && (
+          {hasRole("Student") && !hasRole("Teacher") && !hasRole("Dean") && (
             <Card elevation={0} sx={{ maxWidth: 800, mx: "auto", p: 3, mt: 1 }}>
               <RequestsCard role="Student" />
             </Card>

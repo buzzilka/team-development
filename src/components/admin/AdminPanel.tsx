@@ -24,25 +24,29 @@ const AdminPannel = ({ roles }: AdminPannelProps) => {
   const hasRole = (role: string) => roles.includes(role);
 
   const tabs = [];
+
   if (hasRole("Dean")) {
-    tabs.push({ label: "Пользователи", component: <AdminUsers role={"Dean"} /> });
+    tabs.push({
+      label: "Пользователи",
+      component: <AdminUsers role="Dean" />,
+    });
     tabs.push({ label: "Заявки", component: <RequestsCard role="Dean" /> });
   }
-  if (hasRole("Teacher") && hasRole("Student"))
+
+  if (hasRole("Teacher") && !hasRole("Dean")) {
+    tabs.push({
+      label: "Пользователи",
+      component: <AdminUsers role="Teacher" />,
+    });
+  }
+
+  if (hasRole("Student")) {
     tabs.push({
       label: "Мои заявки",
-      component: <RequestsCard role={"Student"} />,
+      component: <RequestsCard role="Student" />,
     });
-  if (hasRole("Teacher") && hasRole("Dean"))
-    tabs.push({
-      label: "Пользователи",
-      component: <AdminUsers role={"Dean"} />,
-    });
-  if (hasRole("Teacher") && !hasRole("Dean"))
-    tabs.push({
-      label: "Пользователи",
-      component: <AdminUsers role={"Teacher"} />,
-    });
+  }
+
   tabs.push({
     label: "Выгрузка одобренных заявок",
     component: <RequestsDownload />,
@@ -65,5 +69,6 @@ const AdminPannel = ({ roles }: AdminPannelProps) => {
     </Card>
   );
 };
+
 
 export default AdminPannel;

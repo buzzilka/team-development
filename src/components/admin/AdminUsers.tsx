@@ -50,10 +50,6 @@ const UserCard = ({
   };
 
   const handleSaveRolesClick = async (id: string, newRoles: string[]) => {
-    if (newRoles.includes("Student") && newRoles.includes("Dean")) {
-      alert("Сотрудник деканата не может быть студентом");
-      return;
-    }
     if (newRoles.length == 0){
       alert("Нельзя убрать все роли у пользователя");
       return;

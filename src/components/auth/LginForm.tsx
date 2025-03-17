@@ -23,7 +23,7 @@ const LoginForm = () => {
 
   const onSubmit = async (data: { login: string; password: string }) => {
     try {
-      const response = await loginUser(data.login, data.password);
+      const response = await loginUser(data.login.trim(), data.password.trim());
       localStorage.setItem("token", response.token);
       window.location.href = "/profile";
     } catch (error) {
