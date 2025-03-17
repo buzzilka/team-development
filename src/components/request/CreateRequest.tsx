@@ -13,7 +13,10 @@ import {
 import { useState } from "react";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { fetchRequest, uploadRequest } from "../../api/studentEndpoints";
-import { ConfirmationType, RequestInterface } from "../../interfaces/RequestInterface";
+import {
+  ConfirmationType,
+  RequestInterface,
+} from "../../interfaces/RequestInterface";
 import { VisuallyHiddenInput } from "../../styles/VisuallyHiddenInput";
 
 interface CreateRequestProps {
@@ -22,7 +25,11 @@ interface CreateRequestProps {
   onRequestCreated: (newRequest: RequestInterface) => void;
 }
 
-const CreateRequest = ({ open, onClose, onRequestCreated }: CreateRequestProps) => {
+const CreateRequest = ({
+  open,
+  onClose,
+  onRequestCreated,
+}: CreateRequestProps) => {
   const [type, setType] = useState<ConfirmationType>("Medical");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -109,7 +116,7 @@ const CreateRequest = ({ open, onClose, onRequestCreated }: CreateRequestProps) 
 
       const newRequest = await fetchRequest(response.id);
 
-      onRequestCreated(newRequest); 
+      onRequestCreated(newRequest);
 
       onClose();
     } catch (error) {
@@ -164,7 +171,6 @@ const CreateRequest = ({ open, onClose, onRequestCreated }: CreateRequestProps) 
             />
           )}
 
-          {(type === "Medical" || type === "Educational") && (
             <Stack direction="row" alignItems="center" spacing={1}>
               <Button
                 disableRipple
@@ -192,12 +198,12 @@ const CreateRequest = ({ open, onClose, onRequestCreated }: CreateRequestProps) 
                   : "Файл не выбран"}
               </span>
             </Stack>
-          )}
 
           {type === "Family" && (
             <Typography>
-              При подтверждении заявки необходимо будет написать заявление в
-              деканате.
+              Для этой заявки файл не является обязательным, но если
+              подтверждающего файла нет, нужно явиться в деканат для написания
+              заявления.
             </Typography>
           )}
 

@@ -257,7 +257,7 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
             </>
           )}
 
-          {editable && request.confirmationType !== "Family" && (
+          {editable  && (
             <Stack direction="row" alignItems="center" spacing={1}>
               <Button
                 disableRipple
