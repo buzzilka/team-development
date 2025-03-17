@@ -49,6 +49,10 @@ const UserCard = ({
   };
 
   const handleSaveRolesClick = async (id: string, newRoles: string[]) => {
+    if (newRoles.includes("Student") && newRoles.includes("Dean")){
+      alert("Сотрудник деканата не может быть студентом")
+      return;
+    }
     try {
       await updateUserRole(id, newRoles);
       updateRole(id, newRoles);
