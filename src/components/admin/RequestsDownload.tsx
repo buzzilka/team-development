@@ -54,7 +54,7 @@ const RequestsDownload = () => {
         errorMessage = error.message;
       }
 
-      errorPopup("Ошибка изменения статуса аккаунта", errorMessage);
+      errorPopup("Ошибка выгрузки", errorMessage);
     }
   };
 
