@@ -6,6 +6,8 @@ import AdminPanel from "../components/admin/AdminPanel";
 import { UserInterface } from "../interfaces/UserInterface";
 import { CenteredProgress } from "../styles/CentredProgress";
 import { Card } from "@mui/material";
+import { AxiosError } from "axios";
+import { errorPopup } from "../styles/notifications";
 
 const ProfilePage = () => {
   const [user, setUser] = useState<UserInterface | null>(null);
@@ -19,7 +21,16 @@ const ProfilePage = () => {
         localStorage.setItem("id", userData.id);
         localStorage.setItem("roles", userData.roles);
       } catch (error) {
-        console.error("Ошибка при получении данных:", error);
+        let errorMessage = "Произошла неизвестная ошибка";
+
+        if (error instanceof AxiosError) {
+          errorMessage =
+            error.response?.data?.message || "Непредвиденная ошибка.";
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        errorPopup("Ошибка загрузки ифнормации пользователя", errorMessage);
       } finally {
         setLoading(false);
       }

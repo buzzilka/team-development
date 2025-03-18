@@ -3,6 +3,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import { loginUser } from "../../api/authEndpoints";
+import { AxiosError } from "axios";
+import { errorPopup } from "../../styles/notifications";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object({
   login: yup.string().min(6, "Минимум 6 символов").required("Введите логин"),
@@ -21,14 +24,23 @@ const LoginForm = () => {
     resolver: yupResolver(schema),
   });
 
+  const navigate = useNavigate();
+
   const onSubmit = async (data: { login: string; password: string }) => {
     try {
       const response = await loginUser(data.login.trim(), data.password.trim());
       localStorage.setItem("token", response.token);
-      window.location.href = "/profile";
+      navigate("/profile");
     } catch (error) {
-      console.log(error);
-      alert("Ошибка входа");
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка входа", errorMessage);
     }
   };
 

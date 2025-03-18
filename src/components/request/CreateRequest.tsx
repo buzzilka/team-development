@@ -18,6 +18,8 @@ import {
   RequestInterface,
 } from "../../interfaces/RequestInterface";
 import { VisuallyHiddenInput } from "../../styles/VisuallyHiddenInput";
+import { AxiosError } from "axios";
+import { errorPopup, successPopup } from "../../styles/notifications";
 
 interface CreateRequestProps {
   open: boolean;
@@ -119,9 +121,18 @@ const CreateRequest = ({
       onRequestCreated(newRequest);
 
       onClose();
+
+      successPopup("Заявка создана.");
     } catch (error) {
-      console.log(error);
-      setError("Ошибка при отправке заявки. Попробуйте еще раз.");
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка при отправке заявки", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -171,33 +182,33 @@ const CreateRequest = ({
             />
           )}
 
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Button
-                disableRipple
-                component="label"
-                variant="outlined"
-                startIcon={<CloudUploadIcon />}
-                sx={{
-                  border: "none",
-                  color: "#0060e6",
-                  bgcolor: "#e8f2fc",
-                  "&:hover": { bgcolor: " #bad9f7" },
-                }}
-              >
-                Загрузить файлы
-                <VisuallyHiddenInput
-                  type="file"
-                  accept=".pdf,.jpg,.png"
-                  multiple
-                  onChange={handleFileChange}
-                />
-              </Button>
-              <span>
-                {files.length > 0
-                  ? `${files.length} файл(ов) выбрано`
-                  : "Файл не выбран"}
-              </span>
-            </Stack>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Button
+              disableRipple
+              component="label"
+              variant="outlined"
+              startIcon={<CloudUploadIcon />}
+              sx={{
+                border: "none",
+                color: "#0060e6",
+                bgcolor: "#e8f2fc",
+                "&:hover": { bgcolor: " #bad9f7" },
+              }}
+            >
+              Загрузить файлы
+              <VisuallyHiddenInput
+                type="file"
+                accept=".pdf,.jpg,.png"
+                multiple
+                onChange={handleFileChange}
+              />
+            </Button>
+            <span>
+              {files.length > 0
+                ? `${files.length} файл(ов) выбрано`
+                : "Файл не выбран"}
+            </span>
+          </Stack>
 
           {type === "Family" && (
             <Typography>

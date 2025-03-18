@@ -16,6 +16,8 @@ import { RequestInterface, Status } from "../../interfaces/RequestInterface";
 import { allRequests } from "../../api/adminEndpoints";
 import { CenteredProgress } from "../../styles/CentredProgress";
 import { requestsInfo } from "../../api/studentEndpoints";
+import { AxiosError } from "axios";
+import { errorPopup } from "../../styles/notifications";
 
 interface RequestsCardProps {
   role: string;
@@ -25,7 +27,7 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
   const [open, setOpen] = useState(false);
   const [requests, setRequests] = useState<RequestInterface[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<boolean | null>(null);
   const [confirmationType, setConfirmationType] = useState("");
   const [status, setStatus] = useState("");
   const [sort, setSort] = useState("");
@@ -78,9 +80,17 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
           );
           setTotalPages(response.pagination.count);
         }
-      } catch (err) {
-        console.log(err);
-        setError(err instanceof Error ? err.message : "Неизвестная ошибка");
+      } catch (error) {
+        let errorMessage = "Произошла неизвестная ошибка";
+
+        if (error instanceof AxiosError) {
+          errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        errorPopup("Ошибка при получении заявок", errorMessage);
+        setError(true)
       } finally {
         setLoading(false);
       }
@@ -90,7 +100,7 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
   }, [role, confirmationType, status, sort, student, page, pageSize]);
 
   if (loading) return <CenteredProgress />;
-  if (error) return <Typography color="error">Ошибка: {error}</Typography>;
+  if (error) return <Typography color="error">Что-то пошло не так 😭</Typography>;
 
   const updateRequestStatus = (requestId: string, newStatus: Status) => {
     setRequests((prevRequests) =>

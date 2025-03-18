@@ -1,6 +1,8 @@
 import { Box, Button, TextField } from "@mui/material";
 import { useState, useEffect } from "react";
 import { downloadRequests } from "../../api/adminEndpoints";
+import { errorPopup, infoPopup } from "../../styles/notifications";
+import { AxiosError } from "axios";
 
 const RequestsDownload = () => {
   const [dateFrom, setDateFrom] = useState("");
@@ -21,26 +23,39 @@ const RequestsDownload = () => {
 
   const handleDownload = async () => {
     if (new Date(dateFrom) > new Date(dateTo)) {
-      alert("Дата начала не может быть позже даты конца.");
+      infoPopup("Дата начала не может быть позже даты конца.");
       return;
     }
     const params = {
       dateFrom: formatDateTime(dateFrom),
       dateTo: formatDateTime(dateTo),
     };
-    const blob = await downloadRequests(params);
+    try {
+      const blob = await downloadRequests(params);
 
-    const url = window.URL.createObjectURL(blob);
-    const filename = "requests.xlsx";
+      const url = window.URL.createObjectURL(blob);
+      const filename = "requests.xlsx";
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
 
-    window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage =
+          error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка изменения статуса аккаунта", errorMessage);
+    }
   };
 
   return (
