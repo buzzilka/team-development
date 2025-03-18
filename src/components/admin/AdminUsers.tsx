@@ -24,7 +24,11 @@ import { UserInterface } from "../../interfaces/UserInterface";
 import { CenteredProgress } from "../../styles/CentredProgress";
 import { rolesMap } from "../../styles/maps";
 import { AxiosError } from "axios";
-import { errorPopup, infoPopup, successPopup } from "../../styles/notifications";
+import {
+  errorPopup,
+  infoPopup,
+  successPopup,
+} from "../../styles/notifications";
 
 const UserCard = ({
   id,
@@ -59,12 +63,13 @@ const UserCard = ({
     try {
       await updateUserRole(id, newRoles);
       updateRole(id, newRoles);
-      successPopup("Роли сохранены.")
+      successPopup("Роли сохранены.");
     } catch (error) {
       let errorMessage = "Произошла неизвестная ошибка";
 
       if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+        errorMessage =
+          error.response?.data?.message || "Непредвиденная ошибка.";
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -82,7 +87,8 @@ const UserCard = ({
       let errorMessage = "Произошла неизвестная ошибка";
 
       if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+        errorMessage =
+          error.response?.data?.message || "Непредвиденная ошибка.";
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -96,12 +102,13 @@ const UserCard = ({
       await updateUserGroup({ userId: id, newGroup: newGroup });
       updateGroup(id, newGroup);
       setIsEditingGroup(false);
-      successPopup("Группа обновлена.")
+      successPopup("Группа обновлена.");
     } catch (error) {
       let errorMessage = "Произошла неизвестная ошибка";
 
       if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+        errorMessage =
+          error.response?.data?.message || "Непредвиденная ошибка.";
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -269,7 +276,7 @@ interface AdminUsersProps {
 const AdminUsers = ({ role }: AdminUsersProps) => {
   const [users, setUsers] = useState<UserInterface[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<boolean | null>(null);
   const [onlyConfirmed, setOnlyConfirmed] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string | "">("");
   const [groupSearch, setGroupSearch] = useState("");
@@ -305,8 +312,18 @@ const AdminUsers = ({ role }: AdminUsersProps) => {
         setUsers(response.value.users);
         setTotalPages(response.value.pagination.count);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Неизвестная ошибка");
+    } catch (error) {
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage =
+          error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка загрузки пользователей.", errorMessage);
+      setError(true)
     } finally {
       setLoading(false);
     }
@@ -382,7 +399,18 @@ const AdminUsers = ({ role }: AdminUsersProps) => {
       {loading ? (
         <CenteredProgress />
       ) : error ? (
-        <Typography color="error">Ошибка: {error}</Typography>
+        <Typography
+          color="error"
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%", 
+          }}
+          fontSize={16}
+        >
+          Что-то пошло не так 😭
+        </Typography>
       ) : users.length > 0 ? (
         <>
           <Stack spacing={2}>

@@ -84,13 +84,14 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
         let errorMessage = "Произошла неизвестная ошибка";
 
         if (error instanceof AxiosError) {
-          errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+          errorMessage =
+            error.response?.data?.message || "Непредвиденная ошибка.";
         } else if (error instanceof Error) {
           errorMessage = error.message;
         }
 
         errorPopup("Ошибка при получении заявок", errorMessage);
-        setError(true)
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -100,7 +101,21 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
   }, [role, confirmationType, status, sort, student, page, pageSize]);
 
   if (loading) return <CenteredProgress />;
-  if (error) return <Typography color="error">Что-то пошло не так 😭</Typography>;
+  if (error)
+    return (
+      <Typography
+        color="error"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100%",
+        }}
+        fontSize={16}
+      >
+        Что-то пошло не так 😭
+      </Typography>
+    );
 
   const updateRequestStatus = (requestId: string, newStatus: Status) => {
     setRequests((prevRequests) =>
@@ -289,7 +304,11 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
             Создать заявку
           </Button>
 
-          <CreateRequest open={open} onClose={() => setOpen(false)}  onRequestCreated={updateRequests}/>
+          <CreateRequest
+            open={open}
+            onClose={() => setOpen(false)}
+            onRequestCreated={updateRequests}
+          />
         </>
       )}
     </Card>
