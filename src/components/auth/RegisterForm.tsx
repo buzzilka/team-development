@@ -12,7 +12,9 @@ import {
   Select,
 } from "@mui/material";
 import { registerUser } from "../../api/authEndpoints";
-import axios from "axios";
+import { AxiosError } from "axios";
+import { errorPopup } from "../../styles/notifications";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object({
   name: yup.string().required("Введите ФИО"),
@@ -25,10 +27,7 @@ const schema = yup.object({
     .string()
     .oneOf([yup.ref("password")], "Пароли не совпадают")
     .required("Повторите пароль"),
-  roles: yup
-    .array()
-    .of(yup.string().required())
-    .required("Роль обязательна"),
+  roles: yup.array().of(yup.string().required()).required("Роль обязательна"),
   group: yup.string().when("roles", {
     is: (roles: string[]) => roles.includes("Student"),
     then: (schema) => schema.required("Введите номер группы"),
@@ -51,6 +50,8 @@ const RegisterForm = () => {
 
   const roles = watch("roles");
 
+  const navigate = useNavigate();
+
   const onSubmit = async (data: {
     name: string;
     login: string;
@@ -58,7 +59,6 @@ const RegisterForm = () => {
     roles: string[];
     group?: string;
   }) => {
-    console.log("Данные формы:", data);
     try {
       const response = await registerUser(
         data.name,
@@ -68,14 +68,17 @@ const RegisterForm = () => {
         data.group || ""
       );
       localStorage.setItem("token", response.token);
-      window.location.href = "/profile";
+      navigate("/profile");
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error);
-      } else {
-        console.log("Не ошибка сервера");
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
       }
-      alert("Ошибка регистрации");
+
+      errorPopup("Ошибка регистрации", errorMessage);
     }
   };
 
@@ -159,6 +162,7 @@ const RegisterForm = () => {
       />
 
       <Button
+        disableRipple
         type="submit"
         variant="outlined"
         color="primary"

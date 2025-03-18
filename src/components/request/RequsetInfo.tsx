@@ -17,6 +17,8 @@ import { RequestInterface, Status } from "../../interfaces/RequestInterface";
 import { VisuallyHiddenInput } from "../../styles/VisuallyHiddenInput";
 import { CenteredProgress } from "../../styles/CentredProgress";
 import { confirmRequest } from "../../api/adminEndpoints";
+import { AxiosError } from "axios";
+import { errorPopup, successPopup } from "../../styles/notifications";
 
 const getFileType = (byteArray: Uint8Array): string => {
   const pdfSignature = [0x25, 0x50, 0x44, 0x46];
@@ -50,10 +52,20 @@ interface RequestInfoProps {
   requestId: string;
   onClose: () => void;
   updateStatus: (id: string, status: Status) => void;
-  updateInfo: (id: string, newDateFrom: string, newDateTo: string, status: Status) => void;
+  updateInfo: (
+    id: string,
+    newDateFrom: string,
+    newDateTo: string,
+    status: Status
+  ) => void;
 }
 
-const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestInfoProps) => {
+const RequestInfo = ({
+  requestId,
+  onClose,
+  updateStatus,
+  updateInfo,
+}: RequestInfoProps) => {
   const [request, setRequest] = useState<RequestInterface | null>(null);
   const [editable, setEditable] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -69,15 +81,26 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
         setRequest(response);
         setExistingFiles(response.files || []);
       } catch (error) {
-        console.log(error);
-        setError("Ошибка загрузки данных");
+        let errorMessage = "Произошла неизвестная ошибка";
+
+        if (error instanceof AxiosError) {
+          errorMessage =
+            error.response?.data?.message || "Непредвиденная ошибка.";
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        errorPopup("Ошибка при получении заявки", errorMessage);
       }
     };
     loadRequest();
   }, [requestId]);
 
   const handleEdit = () => {
-    if (request?.confirmationType === "Educational" && !localStorage.getItem("roles")?.includes("Dean")) {
+    if (
+      request?.confirmationType === "Educational" &&
+      !localStorage.getItem("roles")?.includes("Dean")
+    ) {
       setError("Заявку с типом 'Учебная' может редактировать только деканат.");
       return;
     }
@@ -137,10 +160,24 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
     try {
       await updateRequest(requestId, formData);
       onClose();
-      updateInfo(requestId, formData.get("DateFrom")!.toString(), formData.get("DateTo")!.toString(), "Pending")
+      updateInfo(
+        requestId,
+        formData.get("DateFrom")!.toString(),
+        formData.get("DateTo")!.toString(),
+        "Pending"
+      );
+      successPopup("Заявка обновлена.");
     } catch (error) {
-      console.log(error);
-      setError("Ошибка при обновлении заявки.");
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage =
+          error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка при обновлении заявки", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -149,13 +186,22 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
   const handleConfirmRequset = async (id: string, requestStatus: Status) => {
     try {
       await confirmRequest({ requestId: id, status: requestStatus });
-      updateStatus(id, requestStatus); 
+      updateStatus(id, requestStatus);
       onClose();
+      successPopup("Статус заявки обновлен.");
     } catch (error) {
-      console.log(error);
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage =
+          error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка при обновлении заявки", errorMessage);
     }
   };
-  
 
   if (!request) return <CenteredProgress />;
 
@@ -246,7 +292,20 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
                       link.download = `file_${index + 1}.${fileType}`;
                       link.click();
                     } catch (error) {
-                      console.error("Ошибка при скачивании файла:", error);
+                      let errorMessage = "Произошла неизвестная ошибка";
+
+                      if (error instanceof AxiosError) {
+                        errorMessage =
+                          error.response?.data?.message ||
+                          "Непредвиденная ошибка.";
+                      } else if (error instanceof Error) {
+                        errorMessage = error.message;
+                      }
+
+                      errorPopup(
+                        "Ошибка при скачивании файлов",
+                        errorMessage
+                      );
                       setError("Не удалось скачать файлы");
                     }
                   });
@@ -257,7 +316,7 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
             </>
           )}
 
-          {editable  && (
+          {editable && (
             <Stack direction="row" alignItems="center" spacing={1}>
               <Button
                 disableRipple
@@ -288,7 +347,7 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
         sx={{
           flexDirection: isSmallScreen ? "column" : "row",
           justifyContent: "center",
-          "& > *": { ml: isSmallScreen ? "0 !important" : "1"},
+          "& > *": { ml: isSmallScreen ? "0 !important" : "1" },
         }}
       >
         {editable ? (
@@ -299,7 +358,7 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
               variant="outlined"
               color="error"
               fullWidth={isSmallScreen}
-              sx={{mb: 1}}
+              sx={{ mb: 1 }}
             >
               Отмена
             </Button>
@@ -309,7 +368,7 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
               variant="outlined"
               disabled={loading}
               fullWidth={isSmallScreen}
-              sx={{mb: 1}}
+              sx={{ mb: 1 }}
             >
               {loading ? <CircularProgress size={24} /> : "Сохранить изменения"}
             </Button>
@@ -324,7 +383,7 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
                   color="success"
                   fullWidth={isSmallScreen}
                   onClick={() => handleConfirmRequset(request.id, "Approved")}
-                  sx={{mb: 1}}
+                  sx={{ mb: 1 }}
                 >
                   Принять заявку
                 </Button>
@@ -334,7 +393,7 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
                   color="error"
                   fullWidth={isSmallScreen}
                   onClick={() => handleConfirmRequset(request.id, "Rejected")}
-                  sx={{mb: 1}}
+                  sx={{ mb: 1 }}
                 >
                   Отклонить заявку
                 </Button>
@@ -345,7 +404,7 @@ const RequestInfo = ({ requestId, onClose, updateStatus, updateInfo }: RequestIn
               onClick={handleEdit}
               variant="outlined"
               fullWidth={isSmallScreen}
-              sx={{mb: 1}}
+              sx={{ mb: 1 }}
             >
               Редактировать
             </Button>

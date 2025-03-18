@@ -23,6 +23,8 @@ import {
 import { UserInterface } from "../../interfaces/UserInterface";
 import { CenteredProgress } from "../../styles/CentredProgress";
 import { rolesMap } from "../../styles/maps";
+import { AxiosError } from "axios";
+import { errorPopup, infoPopup, successPopup } from "../../styles/notifications";
 
 const UserCard = ({
   id,
@@ -50,16 +52,24 @@ const UserCard = ({
   };
 
   const handleSaveRolesClick = async (id: string, newRoles: string[]) => {
-    if (newRoles.length == 0){
-      alert("Нельзя убрать все роли у пользователя");
+    if (newRoles.length == 0) {
+      infoPopup("Нельзя убрать все роли у пользователя");
       return;
     }
     try {
       await updateUserRole(id, newRoles);
       updateRole(id, newRoles);
-      console.log("Роли сохранены");
-    } catch (err) {
-      console.error("Ошибка при сохранении ролей:", err);
+      successPopup("Роли сохранены.")
+    } catch (error) {
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка изменения ролей", errorMessage);
     }
   };
 
@@ -67,9 +77,17 @@ const UserCard = ({
     try {
       await confirmAccount({ userId: id, isConfirmed: confirm });
       updateUserConfirmation(id, confirm);
-      console.log("Статус профиля изменён");
-    } catch (err) {
-      console.error("Ошибка при подтверждении:", err);
+      successPopup("Статус профиля изменён.");
+    } catch (error) {
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка изменения статуса аккаунта", errorMessage);
     }
   };
 
@@ -78,8 +96,17 @@ const UserCard = ({
       await updateUserGroup({ userId: id, newGroup: newGroup });
       updateGroup(id, newGroup);
       setIsEditingGroup(false);
-    } catch (err) {
-      console.error("Ошибка при обновлении группы:", err);
+      successPopup("Группа обновлена.")
+    } catch (error) {
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка изменения группы", errorMessage);
     }
   };
 
@@ -127,6 +154,7 @@ const UserCard = ({
             <Select
               multiple
               value={selectedRoles}
+              disabled={currentUserId === id}
               onChange={handleRolesChange}
               renderValue={(selected) =>
                 (selected as string[]).map((role) => rolesMap[role]).join(", ")
@@ -186,6 +214,7 @@ const UserCard = ({
               disableRipple
               variant="outlined"
               size="small"
+              disabled={currentUserId === id}
               onClick={() => handleSaveRolesClick(id, selectedRoles)}
               sx={{
                 color: "#0060e6",

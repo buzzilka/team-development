@@ -2,14 +2,28 @@ import { Card, Typography, Avatar, Button, Grid } from "@mui/material";
 import { logout } from "../../api/profileEndpoints";
 import { UserInterface } from "../../interfaces/UserInterface";
 import { rolesMap } from "../../styles/maps";
+import { useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
+import { errorPopup } from "../../styles/notifications";
 
 function ProfileCard({ name, roles, isConfirmed, group }: UserInterface) {
+  const navigate = useNavigate();
+
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = "/auth";
+      localStorage.clear();
+      navigate("/auth");
     } catch (error) {
-      console.error("Ошибка при выходе из аккаунта:", error);
+      let errorMessage = "Произошла неизвестная ошибка";
+
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      errorPopup("Ошибка выхода", errorMessage);
     }
   };
 
