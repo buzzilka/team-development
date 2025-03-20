@@ -91,7 +91,10 @@ const CreateRequest = ({
       setError("Прикрепите хотя бы один файл");
       return false;
     }
-
+    if (files.length > 5) {
+      setError("Нельзя прикрепить больше 5 файлов");
+      return false;
+    }
     if (startDate > endDate && type !== "Medical") {
       setError("Дата начала не может быть позже даты окончания.");
       return false;
@@ -122,12 +125,15 @@ const CreateRequest = ({
 
       onClose();
 
+      setFiles([]);
+
       successPopup("Заявка создана.");
     } catch (error) {
       let errorMessage = "Произошла неизвестная ошибка";
 
       if (error instanceof AxiosError) {
-        errorMessage = error.response?.data?.message || "Непредвиденная ошибка.";
+        errorMessage =
+          error.response?.data?.message || "Непредвиденная ошибка.";
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -170,17 +176,19 @@ const CreateRequest = ({
             }}
           />
 
-          {type !== "Medical" && (
-            <TextField
-              label="Дата окончания"
-              type="date"
-              value={endDate}
-              onChange={handleEndDateChange}
-              slotProps={{
-                inputLabel: { shrink: true },
-              }}
-            />
-          )}
+          <TextField
+            label={
+              type === "Medical"
+                ? "Дата окончания (необязательно)"
+                : "Дата окончания"
+            }
+            type="date"
+            value={endDate}
+            onChange={handleEndDateChange}
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
+          />
 
           <Stack direction="row" alignItems="center" spacing={1}>
             <Button
@@ -224,7 +232,10 @@ const CreateRequest = ({
       <DialogActions>
         <Button
           disableRipple
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            setFiles([]);
+          }}
           variant="outlined"
           sx={{
             border: "none",
