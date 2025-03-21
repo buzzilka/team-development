@@ -240,20 +240,16 @@ const RequestInfo = ({
             }}
           />
 
-          {request.confirmationType !== "Medical" && (
-            <TextField
-              label="Дата окончания"
-              type="date"
-              value={request.dateTo?.split("T")[0] || ""}
-              onChange={(e) =>
-                setRequest({ ...request, dateTo: e.target.value })
-              }
-              disabled={!editable}
-              slotProps={{
-                inputLabel: { shrink: true },
-              }}
-            />
-          )}
+          <TextField
+            label="Дата окончания"
+            type="date"
+            value={request.dateTo?.split("T")[0] || ""}
+            onChange={(e) => setRequest({ ...request, dateTo: e.target.value })}
+            disabled={!editable}
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
+          />
 
           {existingFiles.length > 0 && (
             <>
@@ -302,10 +298,7 @@ const RequestInfo = ({
                         errorMessage = error.message;
                       }
 
-                      errorPopup(
-                        "Ошибка при скачивании файлов",
-                        errorMessage
-                      );
+                      errorPopup("Ошибка при скачивании файлов", errorMessage);
                       setError("Не удалось скачать файлы");
                     }
                   });
