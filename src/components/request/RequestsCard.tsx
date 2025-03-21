@@ -198,7 +198,7 @@ const RequestsCard = ({ role }: RequestsCardProps) => {
             Дата создания: сначала старые
           </MenuItem>
           <MenuItem disableRipple value="CreatedDesc">
-            Дата создания: сначала старые
+            Дата создания: сначала новые
           </MenuItem>
         </Select>
         {role === "Dean" && (
